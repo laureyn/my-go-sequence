@@ -1,0 +1,41 @@
+services:
+  db:
+    container_name: data
+    image: postgres
+    restart: always
+    # set shared memory limit when using docker compose
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: myPassword
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - internalNet
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pgdata:/var/lib/postgresql/data
+  go:
+    container_name: my-go
+    image: "rjvlayn/my-go-sequence:latest"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - 80:80
+    networks:
+      - internalNet
+    environment:
+     DB_USER: "postgres"
+     DB_PASS: "myPassword"
+     DB_HOST: data
+     DB_PORT: 5432
+     DB_NAME: "postgres"
+
+volumes:
+  pgdata:
+
+networks:
+  internalNet:
