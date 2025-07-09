@@ -57,9 +57,9 @@ func main() {
 		log.Fatalf("❌ Échec définitif de connexion à la DB après plusieurs tentatives : %v", err)
 	}
 	// Timeout de test de connexion
-	db.SetConnMaxLifetime(time.Minute * 3)
-	db.SetMaxOpenConns(10)
+	db.SetMaxOpenConns(20)
 	db.SetMaxIdleConns(10)
+	db.SetConnMaxLifetime(30 * time.Second)
 
 	// Vérification de la connexion
 	err = db.Ping()
