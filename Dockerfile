@@ -1,21 +1,16 @@
-# Étape 1 : build statique de l'application
-FROM golang:1.22-alpine AS builder
+FROM golang:1.23-alpine as builder
 
 WORKDIR /app
-
-# Copie des fichiers de dépendances d'abord (optimise le cache Docker)
-COPY go.mod go.sum ./
-RUN go mod download
-
-# Copie du code source
 COPY . .
 
-# Compilation de l'app (binaire statique optimisé)
+RUN go mod init ddos
+RUN go mod tidy
 RUN go build -ldflags="-s -w" -o app
 
-# Étape 2 : image minimale finale
 FROM alpine:latest
+RUN apk --no-cache add ca-certificates
 
-WORKDIR /root/
+COPY --from=builder /app/app /app/app
 
-# Cop
+EXPOSE 80
+ENTRYPOINT ["/app/app"]
